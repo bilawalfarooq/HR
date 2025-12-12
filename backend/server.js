@@ -56,6 +56,19 @@ app.get(`${process.env.API_PREFIX}/${process.env.API_VERSION}`, (req, res) => {
 // Import routes
 import authRoutes from './src/routes/authRoutes.js';
 import employeeRoutes from './src/routes/employeeRoutes.js';
+import attendanceRoutes from './src/routes/attendanceRoutes.js';
+import leaveRoutes from './src/routes/leaveRoutes.js';
+import holidayRoutes from './src/routes/holidayRoutes.js';
+import rosterRoutes from './src/routes/rosterRoutes.js';
+import timesheetRoutes from './src/routes/timesheetRoutes.js';
+import payrollRoutes from './src/routes/payrollRoutes.js';
+import adminRoutes from './src/routes/adminRoutes.js';
+import superAdminRoutes from './src/routes/superAdminRoutes.js';
+import geoFenceRoutes from './src/routes/geoFenceRoutes.js';
+import resignationRoutes from './src/routes/resignationRoutes.js';
+import onboardingRoutes from './src/routes/onboardingRoutes.js';
+import assetRoutes from './src/routes/assetRoutes.js';
+import fnfRoutes from './src/routes/fnfRoutes.js';
 import { multiTenant } from './src/middleware/multiTenant.js';
 
 // Apply multi-tenant middleware to all API routes
@@ -64,7 +77,20 @@ app.use(`${process.env.API_PREFIX}/${process.env.API_VERSION}`, multiTenant);
 // Use routes
 const apiBase = `${process.env.API_PREFIX}/${process.env.API_VERSION}`;
 app.use(`${apiBase}/auth`, authRoutes);
-app.use(`${apiBase}/employees`, employeeRoutes);
+app.use(`${apiBase}/employee`, employeeRoutes);
+app.use(`${apiBase}/attendance`, attendanceRoutes);
+app.use(`${apiBase}/leaves`, leaveRoutes);
+app.use(`${apiBase}/holidays`, holidayRoutes);
+app.use(`${apiBase}/roster`, rosterRoutes);
+app.use(`${apiBase}/timesheets`, timesheetRoutes);
+app.use(`${apiBase}/payroll`, payrollRoutes);
+app.use(`${apiBase}/admin`, adminRoutes);
+app.use(`${apiBase}/super-admin`, superAdminRoutes);
+app.use(`${apiBase}/geo-fences`, geoFenceRoutes);
+app.use(`${apiBase}/resignations`, resignationRoutes);
+app.use(`${apiBase}/onboarding`, onboardingRoutes);
+app.use(`${apiBase}/assets`, assetRoutes);
+app.use(`${apiBase}/fnf`, fnfRoutes);
 
 // 404 handler - must be after all routes
 app.use(notFound);

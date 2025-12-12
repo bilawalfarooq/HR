@@ -51,6 +51,10 @@ const Employee = sequelize.define('Employee', {
             key: 'employee_id'
         }
     },
+    current_shift_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+    },
     designation: {
         type: DataTypes.STRING(100),
         allowNull: true

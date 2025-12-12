@@ -32,7 +32,6 @@ api.interceptors.response.use(
 
         // Handle network errors
         if (!error.response) {
-            console.error('Network error:', error);
             return Promise.reject({
                 message: 'Unable to connect to the server. Please check your internet connection.',
                 isNetworkError: true

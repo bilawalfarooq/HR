@@ -2,7 +2,6 @@ import { sequelize, Organization, User, Role, Employee } from '../models/index.j
 import { generateTokens, verifyRefreshToken } from '../utils/jwt.js';
 import { AppError } from '../middleware/errorHandler.js';
 import logger from '../utils/logger.js';
-import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import { Op } from 'sequelize';
 import { sendEmail } from '../services/emailService.js';
@@ -121,6 +120,10 @@ export const login = async (req, res, next) => {
     try {
         const { email, password, organization_subdomain } = req.body;
 
+        if (!email || !password) {
+            throw new AppError('Email and password are required', 400);
+        }
+
         // Find organization if subdomain provided
         let organizationId = null;
         if (organization_subdomain) {
@@ -146,12 +149,14 @@ export const login = async (req, res, next) => {
         });
 
         if (!user) {
+            logger.warn(`Login attempt failed: User not found - ${email} (org: ${organization_subdomain || 'any'})`);
             throw new AppError('Invalid email or password', 401);
         }
 
         // Check password
         const isMatch = await user.comparePassword(password);
         if (!isMatch) {
+            logger.warn(`Login attempt failed: Invalid password - ${email} (user_id: ${user.user_id})`);
             throw new AppError('Invalid email or password', 401);
         }
 
@@ -234,20 +239,29 @@ export const refreshToken = async (req, res, next) => {
 
 /**
  * Get current user profile
+ * Optimized to reuse user from auth middleware and only fetch missing associations
  */
 export const getMe = async (req, res, next) => {
     try {
-        const user = await User.findByPk(req.user.user_id, {
-            attributes: { exclude: ['password_hash'] },
-            include: [
-                { model: Role, as: 'role' },
-                { model: Organization, as: 'organization' },
-                { model: Employee, as: 'employee' }
-            ]
-        });
+        // User is already loaded by authenticate middleware with Role
+        const user = req.user;
 
-        if (!user) {
-            throw new AppError('User not found', 404);
+        // Fetch additional associations only if not already loaded
+        // Use a single optimized query to get all needed associations
+        if (!user.organization || !user.employee) {
+            const includes = [
+                { model: Role, as: 'role' } // Preserve existing Role association
+            ];
+            
+            if (!user.organization) {
+                includes.push({ model: Organization, as: 'organization' });
+            }
+            if (!user.employee) {
+                includes.push({ model: Employee, as: 'employee' });
+            }
+
+            // Reload with all needed associations in a single query
+            await user.reload({ include: includes });
         }
 
         res.status(200).json({
@@ -436,7 +450,6 @@ export default {
     refreshToken,
     getMe,
     changePassword,
-    checkSubdomainAvailability,
     checkSubdomainAvailability,
     checkEmailAvailability,
     forgotPassword,

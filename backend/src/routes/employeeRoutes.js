@@ -1,49 +1,33 @@
 import express from 'express';
-import employeeController from '../controllers/employeeController.js';
-import { authenticate, authorize, checkPermission } from '../middleware/auth.js';
-import validate from '../middleware/validator.js';
-// import schemas from '../utils/validationSchemas.js'; // Will add employee schemas later
+import { authenticate } from '../middleware/auth.js';
+import { getDashboard } from '../controllers/EmployeeDashboardController.js';
+import { getProfile, updateProfile, changePassword } from '../controllers/ProfileController.js';
+import { getMyDocuments, uploadDocument, downloadDocument, deleteDocument, upload } from '../controllers/DocumentController.js';
+import { getNotifications, markAsRead, markAllAsRead, deleteNotification } from '../controllers/NotificationController.js';
 
 const router = express.Router();
 
 // All routes require authentication
 router.use(authenticate);
 
-// List all employees
-router.get(
-    '/',
-    checkPermission('employees', 'read'),
-    employeeController.getAllEmployees
-);
+// Dashboard
+router.get('/dashboard', getDashboard);
 
-// Get single employee
-router.get(
-    '/:id',
-    checkPermission('employees', 'read'),
-    employeeController.getEmployeeById
-);
+// Profile
+router.get('/profile', getProfile);
+router.put('/profile', updateProfile);
+router.post('/profile/change-password', changePassword);
 
-// Create employee
-router.post(
-    '/',
-    checkPermission('employees', 'create'),
-    // validate(schemas.createEmployeeSchema),
-    employeeController.createEmployee
-);
+// Documents
+router.get('/documents', getMyDocuments);
+router.post('/documents', upload.single('file'), uploadDocument);
+router.get('/documents/:id/download', downloadDocument);
+router.delete('/documents/:id', deleteDocument);
 
-// Update employee
-router.put(
-    '/:id',
-    checkPermission('employees', 'update'),
-    // validate(schemas.updateEmployeeSchema),
-    employeeController.updateEmployee
-);
-
-// Delete employee
-router.delete(
-    '/:id',
-    checkPermission('employees', 'delete'),
-    employeeController.deleteEmployee
-);
+// Notifications
+router.get('/notifications', getNotifications);
+router.put('/notifications/:id/read', markAsRead);
+router.put('/notifications/read-all', markAllAsRead);
+router.delete('/notifications/:id', deleteNotification);
 
 export default router;

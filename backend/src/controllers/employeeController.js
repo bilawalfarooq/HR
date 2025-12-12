@@ -1,6 +1,5 @@
 import { sequelize, Employee, User, Department, Role } from '../models/index.js';
 import { AppError } from '../middleware/errorHandler.js';
-import { generateTokens } from '../utils/jwt.js';
 
 /**
  * Create a new employee
